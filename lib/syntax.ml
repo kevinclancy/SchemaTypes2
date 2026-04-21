@@ -35,14 +35,16 @@ type string_pred = string -> bool
     string belongs to a particular refinement. *)
 type discriminator =
   | Prefix of string
-      (** All values of the type share this common prefix. The payload
-          is the shared prefix string. *)
+  (** All values of the type share this common prefix. The payload
+      is the shared prefix string. *)
+
   | Literal of string
-      (** The type contains exactly one known value. The payload is
-          that value. *)
+  (** The type contains exactly one known value. The payload is
+      that value. *)
+
   | SomeLiteral
-      (** The type contains exactly one value, but we do not know
-          which one. *)
+  (** The type contains exactly one value, but we do not know
+      which one. *)
 
 (** Check that discriminator [a] is a sub-discriminator of [b]: every
     string satisfying [a] must also satisfy [b]. Returns [Check.Result ()]
@@ -105,9 +107,11 @@ let str_ref_kind_prefix (k : str_ref_kind) : string =
 
 (** Statements of the M assertion language, printed as indented lines. *)
 type m_code =
-  | MLine of string  (** A single line of M code. *)
+  | MLine of string
+  (** A single line of M code. *)
+
   | MBlock of m_code list
-      (** A nested block of M code, rendered with extra indentation. *)
+  (** A nested block of M code, rendered with extra indentation. *)
 
 (** Render [m_code] to a string, indenting nested blocks. *)
 let m_code_to_string (code : m_code) : string =
@@ -195,18 +199,19 @@ let tree_kind : proper_kind =
 (** A kind: either the kind of a type, or the kind of a type operator. *)
 type kind =
   | KProper of proper_kind * Check.range
-      (** The kind of a type; carries refinement info and a source range. *)
+  (** The kind of a type; carries refinement info and a source range. *)
+
   | KOperator of string * proper_kind * kind * Check.range
-      (** The kind of a type operator. Fields are
-          [(param_name, k_dom, k_cod, range)]: the bound parameter's
-          name, its domain kind, the codomain kind, and the source
-          range. *)
+  (** The kind of a type operator. Fields are
+      [(param_name, k_dom, k_cod, range)]: the bound parameter's
+      name, its domain kind, the codomain kind, and the source
+      range. *)
 
 (** A surface-syntax kind (what the parser produces) — currently only
     the "Proper" form. *)
 type syntax_kind =
   | Proper of Check.range
-      (** The kind of a type (as opposed to a type operator). *)
+  (** The kind of a type (as opposed to a type operator). *)
 
 (** A bound type-level parameter: its name, its kind, and the range of
     source it occurred in. *)
@@ -218,13 +223,18 @@ type ty_param = {
 
 (** How one field of a packed-string tuple is delimited from the next. *)
 type delimiter =
-  | Final  (** The last field of a tuple — needs no delimiter. *)
+  | Final
+  (** The last field of a tuple — needs no delimiter. *)
+
   | Fixed of Check.range
-      (** A fixed-width field — needs no delimiter; carries its source range. *)
+  (** A fixed-width field — needs no delimiter; carries its source range. *)
+
   | LengthEncode of Check.range
-      (** Field delimited by a 2-byte length prefix. *)
+  (** Field delimited by a 2-byte length prefix. *)
+
   | CharDelim of char * Check.range
-      (** Field delimited by a specific character. *)
+  (** Field delimited by a specific character. *)
+
 
 (** Render a [delimiter] to a short string for error messages. *)
 let delimiter_to_string (d : delimiter) : string =
@@ -236,15 +246,32 @@ let delimiter_to_string (d : delimiter) : string =
 
 (** Binary operators of the M assertion language. *)
 type m_bin_op =
-  | And  (** Logical conjunction. *)
-  | Or  (** Logical disjunction. *)
-  | Plus  (** Integer/string addition. *)
-  | Minus  (** Integer subtraction. *)
-  | Times  (** Multiplication. *)
-  | Mod  (** Modulo. *)
-  | Div  (** Division. *)
-  | IntDiv  (** Integer division. *)
-  | Eq  (** Equality. *)
+  | And
+  (** Logical conjunction. *)
+
+  | Or
+  (** Logical disjunction. *)
+
+  | Plus
+  (** Integer/string addition. *)
+
+  | Minus
+  (** Integer subtraction. *)
+
+  | Times
+  (** Multiplication. *)
+
+  | Mod
+  (** Modulo. *)
+
+  | Div
+  (** Division. *)
+
+  | IntDiv
+  (** Integer division. *)
+
+  | Eq
+  (** Equality. *)
 
 (** Render an [m_bin_op] to its surface-syntax symbol. *)
 let m_bin_op_to_string (op : m_bin_op) : string =
@@ -262,12 +289,19 @@ let m_bin_op_to_string (op : m_bin_op) : string =
 (** Expressions of the M assertion language. *)
 type m_expr =
   | BinOp of m_expr * m_bin_op * m_expr * Check.range
-      (** A binary operator application: [left op right]. *)
+  (** A binary operator application: [left op right]. *)
+
   | FunCall of string * m_expr list * Check.range
-      (** A function call: [name(args...)]. *)
-  | Var of string * Check.range  (** A variable reference. *)
-  | Int of int32 * Check.range  (** An integer literal. *)
-  | StrLit of string * Check.range  (** A string literal. *)
+  (** A function call: [name(args...)]. *)
+
+  | Var of string * Check.range
+  (** A variable reference. *)
+
+  | Int of int32 * Check.range
+  (** An integer literal. *)
+
+  | StrLit of string * Check.range
+  (** A string literal. *)
 
 (** Render an [m_expr] to its surface syntax. *)
 let rec m_expr_to_string (e : m_expr) : string =
@@ -323,40 +357,52 @@ and subscript_path = {
 (** The AST of types in the schema language. *)
 and ty =
   | TyVec of ty * Check.range
-      (** A 1-based array where the length is stored at index 0.
-          Payload: element type and source range. *)
+  (** A 1-based array where the length is stored at index 0.
+      Payload: element type and source range. *)
+
   | TyDelimList of ty * delimiter * Check.range
-      (** A list whose elements are of string type, delimited by the
-          given delimiter. Payload: element type, delimiter, source
-          range. *)
+  (** A list whose elements are of string type, delimited by the
+      given delimiter. Payload: element type, delimiter, source
+      range. *)
+
   | TyObj of obj_ty_root option * obj_ty_field list * Check.range
-      (** TypeScript's object type. Payload: the optional special root
-          field, the ordinary fields, and the source range. *)
+  (** TypeScript's object type. Payload: the optional special root
+      field, the ordinary fields, and the source range. *)
+
   | TyTuple of delimiter option * tuple_field list * Check.range
-      (** A packed string tuple. Payload: an optional universal
-          delimiter applied to every field, the list of fields, and
-          the source range. *)
+  (** A packed string tuple. Payload: an optional universal
+      delimiter applied to every field, the list of fields, and
+      the source range. *)
+
   | TyStrLiteral of string * Check.range
-      (** A string literal type: the type containing only the given string. *)
+  (** A string literal type: the type containing only the given string. *)
+
   | TyUnion of ty list * Check.range
-      (** A prefix-discriminated union of types. *)
+  (** A prefix-discriminated union of types. *)
+
   | TyBitStr of int * Check.range
-      (** The type of length-[n] bit strings. *)
+  (** The type of length-[n] bit strings. *)
+
   | TyName of string * Check.range
-      (** An identifier referring to a type alias or type variable. *)
+  (** An identifier referring to a type alias or type variable. *)
+
   | TySubscriptPath of subscript_path * Check.range
-      (** The type of all subscripts directly under a given path with
-          the given key type. *)
+  (** The type of all subscripts directly under a given path with
+      the given key type. *)
+
   | TyApp of ty * ty * Check.range
-      (** A type-operator application: [ty_op ty_arg]. *)
+  (** A type-operator application: [ty_op ty_arg]. *)
+
   | TyForall of string * kind * ty * Check.range
-      (** A type abstraction: [(param : kind) => body]. *)
+  (** A type abstraction: [(param : kind) => body]. *)
+
   | TyRef of ty * m_expr * Check.range
-      (** A refinement type: values of the base type satisfying the
-          given M-language refinement. *)
+  (** A refinement type: values of the base type satisfying the
+      given M-language refinement. *)
+
   | TyWithout of ty * Char_set.t * Check.range
-      (** A "without" type: the base type excluding strings containing
-          any character in the ban set. *)
+  (** A "without" type: the base type excluding strings containing
+      any character in the ban set. *)
 
 (** Substitute [a] for the free type variable [x] inside [b]. *)
 let rec ty_subst (a : ty) (x : string) (b : ty) : ty =
@@ -544,10 +590,12 @@ let make_obj_ty (fields : obj_ty_field list) (rng : Check.range) : ty =
     comma (open). *)
 type query_style =
   | ClosedQuery of int option
-      (** A closed query (input ended with [)]). The payload is [Some n]
-          if the user wrote [@n] at the end to pick the nth tuple
-          field. *)
-  | OpenQuery  (** An open query (input ended with [,]). *)
+  (** A closed query (input ended with [)]). The payload is [Some n]
+      if the user wrote [@n] at the end to pick the nth tuple
+      field. *)
+
+  | OpenQuery
+  (** An open query (input ended with [,]). *)
 
 (** A user query about the type at a subscripted location. *)
 type type_query = {
