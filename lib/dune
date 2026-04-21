@@ -1,0 +1,6 @@
+(library
+ (name schema_types)
+ (wrapped true))
+
+(ocamllex lexer)
+(menhir (modules parser))
