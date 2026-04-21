@@ -11,12 +11,14 @@
   comment to each constructor explaining what the variant represents and
   what its payload fields mean. This applies to ported types as well as new
   ones.
-- **Variant doc-comment layout.** Doc comments for variant constructors
-  go on the line *after* the constructor, aligned in the same column as
-  the `|`. Each variant-plus-docstring group must be separated from the
-  next by a blank line. The blank line is load-bearing — without it,
-  OCaml's parser merges adjacent docstrings and merlin/VSCode hover
-  shows the wrong documentation. Example:
+- **Variant and record doc-comment layout.** Doc comments for variant
+  constructors and record fields go on the line *after* the
+  constructor/field, aligned in the same column as the `|` (for
+  variants) or the field name (for records). Each constructor/field +
+  docstring group must be separated from the next by a blank line. The
+  blank line is load-bearing — without it, OCaml's parser merges
+  adjacent docstrings and merlin/VSCode hover shows the wrong
+  documentation. Examples:
   ```
   type t =
     | A of int
@@ -24,4 +26,12 @@
 
     | B of string
     (** Doc for B. *)
+
+  type r = {
+    x : int;
+    (** Doc for x. *)
+
+    y : string;
+    (** Doc for y. *)
+  }
   ```

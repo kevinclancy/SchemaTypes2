@@ -70,15 +70,18 @@ let discriminator_sub (a : discriminator) (b : discriminator) : unit Check.t =
     fixed length, and an optional runtime predicate. *)
 type str_ref_kind = {
   allowed_chars : Char_set.t;
-      (** A superset of all characters that can appear in values of the type. *)
+  (** A superset of all characters that can appear in values of the type. *)
+
   discriminator : discriminator;
-      (** Helps distinguish this type's values from those of other string types. *)
+  (** Helps distinguish this type's values from those of other string types. *)
+
   fixed_length : int option;
-      (** If every value of the type has the same length, holds that length. *)
+  (** If every value of the type has the same length, holds that length. *)
+
   fs_pred : string_pred option;
-      (** Prototype-specific: a function that decides membership.
-          Ignored for equality and comparison since functions aren't
-          comparable. *)
+  (** Prototype-specific: a function that decides membership.
+      Ignored for equality and comparison since functions aren't
+      comparable. *)
 }
 
 (** Structural equality on [str_ref_kind], excluding [fs_pred] since
@@ -132,10 +135,11 @@ let m_code_to_string (code : m_code) : string =
     assertion about the values of the type. *)
 type proper_kind = {
   str_kind : str_ref_kind option;
-      (** If present, the type is a string refinement type and this
-          describes its shape. If absent, the type is not a string type. *)
+  (** If present, the type is a string refinement type and this
+      describes its shape. If absent, the type is not a string type. *)
+
   assertion : m_code;
-      (** Assertion about values of the type, in the M assertion language. *)
+  (** Assertion about values of the type, in the M assertion language. *)
 }
 
 (** Superkind of all string kinds: any character, any prefix, no
@@ -216,9 +220,14 @@ type syntax_kind =
 (** A bound type-level parameter: its name, its kind, and the range of
     source it occurred in. *)
 type ty_param = {
-  id : string;  (** Identifier of the parameter. *)
-  kind : proper_kind;  (** Kind of the parameter. *)
-  rng : Check.range;  (** Source range of the parameter's occurrence. *)
+  id : string;
+  (** Identifier of the parameter. *)
+
+  kind : proper_kind;
+  (** Kind of the parameter. *)
+
+  rng : Check.range;
+  (** Source range of the parameter's occurrence. *)
 }
 
 (** How one field of a packed-string tuple is delimited from the next. *)
@@ -316,42 +325,71 @@ let rec m_expr_to_string (e : m_expr) : string =
 
 (** One field of a packed-string tuple type. *)
 type tuple_field = {
-  comment : string;  (** Human-readable description of the field. *)
-  name : string;  (** The field's identifier. *)
-  ty : ty;  (** The field's type. *)
-  delim : delimiter option;  (** The field's delimiter, if any. *)
-  rng : Check.range;  (** Source range of the field. *)
+  comment : string;
+  (** Human-readable description of the field. *)
+
+  name : string;
+  (** The field's identifier. *)
+
+  ty : ty;
+  (** The field's type. *)
+
+  delim : delimiter option;
+  (** The field's delimiter, if any. *)
+
+  rng : Check.range;
+  (** Source range of the field. *)
 }
 
 (** One field of an object (TypeScript-style) type. *)
 and obj_ty_field = {
-  description : string;  (** Human-readable description of the field. *)
-  key_id : string option;  (** Identifier bound to the key, if any. *)
-  key_ty : ty;  (** Type of the field's key. *)
-  val_id : string option;  (** Identifier bound to the value, if any. *)
-  val_ty : ty;  (** Type of the field's value. *)
+  description : string;
+  (** Human-readable description of the field. *)
+
+  key_id : string option;
+  (** Identifier bound to the key, if any. *)
+
+  key_ty : ty;
+  (** Type of the field's key. *)
+
+  val_id : string option;
+  (** Identifier bound to the value, if any. *)
+
+  val_ty : ty;
+  (** Type of the field's value. *)
+
   non_empty : bool;
-      (** Whether this field must contain at least one key-value pair. *)
-  rng : Check.range;  (** Source range of the field. *)
+  (** Whether this field must contain at least one key-value pair. *)
+
+  rng : Check.range;
+  (** Source range of the field. *)
 }
 
 (** The special "root" field of an object type: the data stored at the
     object's root location. *)
 and obj_ty_root = {
-  description : string;  (** Human-readable description of the root field. *)
+  description : string;
+  (** Human-readable description of the root field. *)
+
   val_ty : ty;
-      (** Type (typically a string refinement type) of data at the root. *)
-  rng : Check.range;  (** Source range of the root field. *)
+  (** Type (typically a string refinement type) of data at the root. *)
+
+  rng : Check.range;
+  (** Source range of the root field. *)
 }
 
 (** Identifies a subscript inside a hierarchical array: the global the
     path starts from, the chain of subscript types leading to the
     point of interest, and the type of the subscript of interest. *)
 and subscript_path = {
-  global_name : string;  (** Name of the global at the root of the path. *)
+  global_name : string;
+  (** Name of the global at the root of the path. *)
+
   subscripts : ty list;
-      (** Chain of subscripts on the way to the subscript of interest. *)
-  ty : ty;  (** Type (a string type) of the subscript of interest. *)
+  (** Chain of subscripts on the way to the subscript of interest. *)
+
+  ty : ty;
+  (** Type (a string type) of the subscript of interest. *)
 }
 
 (** The AST of types in the schema language. *)
@@ -543,18 +581,32 @@ let make_multi_key_dict (description : string)
 
 (** A top-level type definition: an identifier bound to a type. *)
 type type_def = {
-  comment : string;  (** Human-readable description of the type. *)
-  id : string;  (** Identifier the type is bound to. *)
-  ty : ty;  (** The type being defined. *)
-  rng : Check.range;  (** Source range of the definition. *)
+  comment : string;
+  (** Human-readable description of the type. *)
+
+  id : string;
+  (** Identifier the type is bound to. *)
+
+  ty : ty;
+  (** The type being defined. *)
+
+  rng : Check.range;
+  (** Source range of the definition. *)
 }
 
 (** A global's type ascription: "global [id] has type [ty]". *)
 type type_ascription = {
-  comment : string;  (** Human-readable description of the global. *)
-  id : string;  (** Name of the global. *)
-  ty : ty;  (** Type ascribed to the global. *)
-  rng : Check.range;  (** Source range of the ascription. *)
+  comment : string;
+  (** Human-readable description of the global. *)
+
+  id : string;
+  (** Name of the global. *)
+
+  ty : ty;
+  (** Type ascribed to the global. *)
+
+  rng : Check.range;
+  (** Source range of the ascription. *)
 }
 
 (** A full program: a list of type definitions followed by a list of
@@ -599,9 +651,12 @@ type query_style =
 
 (** A user query about the type at a subscripted location. *)
 type type_query = {
-  global_name : string;  (** Name of the global being queried. *)
+  global_name : string;
+  (** Name of the global being queried. *)
+
   subscripts : string list;
-      (** Sequence of subscripts leading to the queried location. *)
+  (** Sequence of subscripts leading to the queried location. *)
+
   style : query_style;
-      (** Whether the query was open or closed, plus any tuple-field index. *)
+  (** Whether the query was open or closed, plus any tuple-field index. *)
 }
