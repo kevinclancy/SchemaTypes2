@@ -1,6 +1,7 @@
 (library
  (name schema_types)
- (wrapped true))
+ (wrapped true)
+ (preprocess (pps ppx_string)))
 
 (ocamllex lexer)
 (menhir (modules parser))
