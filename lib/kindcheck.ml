@@ -8,7 +8,7 @@ open Syntax
 let nl = "\n"
 
 (** Maps ascribed global names to a (path, prefix) pair. *)
-type ascription_env = (string, ty list * string) Hashtbl.t
+type ascription_env = (ty list * string) String_map.t
 
 (** A single entry in the type-alias environment. Describes a type
     alias: its kind, the subscript paths it depends on, its body (for
@@ -28,7 +28,7 @@ type type_alias_entry = {
 }
 
 (** Maps the name of a type to its [type_alias_entry]. *)
-type type_alias_env = (string, type_alias_entry) Hashtbl.t
+type type_alias_env = type_alias_entry String_map.t
 
 (** An entry for a type variable in the type-variable environment —
     currently just its kind. *)
@@ -38,7 +38,7 @@ type type_var_entry = {
 }
 
 (** Maps a type variable's name to its [type_var_entry]. *)
-type type_var_env = (string, type_var_entry) Hashtbl.t
+type type_var_env = type_var_entry String_map.t
 
 (** The kind-checking context: a type-alias environment and a
     type-variable environment. *)
@@ -50,28 +50,12 @@ type context = {
   (** Environment of type variables in scope. *)
 }
 
-(** Look up a type alias by name. *)
-let lookup_alias (ctxt : context) (name : string) : type_alias_entry option =
-  Hashtbl.find_opt ctxt.ty_alias_env name
-
-(** Look up a type variable by name. *)
-let lookup_var (ctxt : context) (name : string) : type_var_entry option =
-  Hashtbl.find_opt ctxt.ty_var_env name
-
-(** Copy a context, then extend its type-variable environment with a
-    new binding. The original context is unchanged. *)
-let extend_ty_var (ctxt : context) (name : string) (entry : type_var_entry)
-    : context =
-  let ty_var_env' = Hashtbl.copy ctxt.ty_var_env in
-  Hashtbl.replace ty_var_env' name entry;
-  { ctxt with ty_var_env = ty_var_env' }
-
 (** Head-normalize a type: unfold named aliases and beta-reduce
     type-operator applications at the head position. *)
 let rec ty_normalize (ctxt : context) (t : ty) : ty =
   match t with
   | TyName (name, _) ->
-    (match lookup_alias ctxt name with
+    (match String_map.find_opt name ctxt.ty_alias_env with
      | Some { ty = Some body; _ } -> ty_normalize ctxt body
      | _ -> t)
   | TyApp (TyForall (x, _, ty_body, _), ty_arg, _) ->
@@ -86,7 +70,7 @@ let rec ty_normalize (ctxt : context) (t : ty) : ty =
 let ty_unfold (ctxt : context) (t : ty) : ty option =
   match t with
   | TyName (name, _) ->
-    (match lookup_alias ctxt name with
+    (match String_map.find_opt name ctxt.ty_alias_env with
      | Some { ty = Some body; _ } -> Some body
      | _ -> None)
   | _ -> None
@@ -757,10 +741,10 @@ and k_synth_ty (ctxt : context) (t : ty) :
         KProper
           ( { str_kind = Some str_ref_kind; assertion }, Check.no_range ) )
   | TyName (name, rng) ->
-    (match lookup_alias ctxt name with
+    (match String_map.find_opt name ctxt.ty_alias_env with
      | Some entry -> return ([], entry.kind)
      | None ->
-       (match lookup_var ctxt name with
+       (match String_map.find_opt name ctxt.ty_var_env with
         | Some entry -> return ([], entry.kind)
         | None ->
           Error [ ({%string|Type '%{name}' is not in context.|}, rng) ]))
@@ -793,7 +777,11 @@ and k_synth_ty (ctxt : context) (t : ty) :
       | _ ->
         Error [ ("Type parameters must be proper types", ty_range t) ]
     in
-    let ctxt' = extend_ty_var ctxt param_name { kind = k_param } in
+    let ctxt' =
+      { ctxt with
+        ty_var_env =
+          String_map.add param_name { kind = k_param } ctxt.ty_var_env }
+    in
     let* paths, k_body = k_synth_ty ctxt' ty_body in
     return
       ( paths,

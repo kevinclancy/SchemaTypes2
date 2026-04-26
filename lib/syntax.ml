@@ -4,6 +4,10 @@
     string refinement types. *)
 module Char_set = Set.Make (Char)
 
+(** Map keyed by strings — used for environments mapping identifiers
+    to their entries. *)
+module String_map = Map.Make (String)
+
 (** The universe of all characters: bytes 0..255 treated as [char]s. *)
 let all_chars : Char_set.t =
   let rec loop i acc =
